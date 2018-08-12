@@ -57,6 +57,9 @@ void ClientScan::start(int _time) {
   sniffing = true;
 }
 
+/**
+ * 
+ */
 bool ClientScan::stop() {
   long curTime = millis();
   if (curTime - startTime >= (timeout * 1000) / channelsNum && curChannel < channelsNum) {
@@ -88,6 +91,9 @@ bool ClientScan::stop() {
   return false;
 }
 
+/**
+ * 
+ */
 int ClientScan::add(Mac adr){
   int clientNum = clients.getNum(adr);
   if (clientNum == -1 && results < maxClientScanResults) {
@@ -99,6 +105,10 @@ int ClientScan::add(Mac adr){
   return clientNum;
 }
 
+
+/**
+ * 
+ */
 void ClientScan::packetSniffer(uint8_t *buf, uint16_t len) {
   if (sniffing && len > 27) {
     from.set(buf[16], buf[17], buf[18], buf[19], buf[20], buf[21]);
@@ -124,16 +134,23 @@ void ClientScan::packetSniffer(uint8_t *buf, uint16_t len) {
     }
   }
 }
-
+//
 String ClientScan::getClientName(int num) {
   return nameList.getByMac(getClientMac(num));
 }
+// @win - try ro replace the response with mac
+//Mac ClientScan::getClientName(int num) {
+//  return getClientMac(num);
+//}
+
+
 int ClientScan::getClientPackets(int num) {
   return packets[clients.getNum(clients._get(num))];
 }
 String ClientScan::getClientVendor(int num) {
   return vendors[num];
 }
+
 Mac ClientScan::getClientMac(int num) {
   return clients._get(num);
 }
@@ -177,6 +194,8 @@ size_t ClientScan::getSize(){
       json += "\"m\":\"" + getClientMac(i).toString() + "\",";
       json += "\"n\":\"" + (String)nameList.getByMac(getClientMac(i)) + "\",";
       json += "\"l\":" + (String)nameList.getNumByMac(getClientMac(i)) + ",";
+//      json += "\"n\":\"" + (String)getClientMac(i) + "\",";
+//      json += "\"l\":" + (String)getClientMac(i) + ",";
       json += "\"v\":\"" + (String)getClientVendor(i) + "\",";
       json += "\"s\":" + (String)getClientSelected(i) + ",";
       if(getClientConnectedAp(i)>=0) json += "\"a\":\"" + (String)apScan.getAPName(getClientConnectedAp(i)) + "\"";
@@ -187,16 +206,16 @@ size_t ClientScan::getSize(){
   }
   json = "],\"nameList\":[";
   jsonSize += json.length();
-  
-  for (int i = 0; i < nameList.len; i++) {
-    json = "{";
-    json += "\"n\":\"" + nameList.get(i) + "\",";
-    json += "\"m\":\"" + nameList.getMac(i).toString() + "\"";
-    //json += "\"v\":\"" + data_getVendor(nameList.getMac(i)._get(0), nameList.getMac(i)._get(1), nameList.getMac(i)._get(2)) + "\"";
-    json += "}";
-    if (i != nameList.len - 1) json += ",";
-    jsonSize += json.length();
-  }
+//  
+//  for (int i = 0; i < nameList.len; i++) {
+//    json = "{";
+//    json += "\"n\":\"" + nameList.get(i) + "\",";
+//    json += "\"m\":\"" + nameList.getMac(i).toString() + "\"";
+//    //json += "\"v\":\"" + data_getVendor(nameList.getMac(i)._get(0), nameList.getMac(i)._get(1), nameList.getMac(i)._get(2)) + "\"";
+//    json += "}";
+//    if (i != nameList.len - 1) json += ",";
+//    jsonSize += json.length();
+//  }
   jsonSize += 2;
     
   return jsonSize;
@@ -204,11 +223,11 @@ size_t ClientScan::getSize(){
 
 void ClientScan::send() {
   size_t _size = getSize();
-  sendHeader(200, "text/json", _size);
+  //sendHeader(200, "text/json", _size);
   if (debug) Serial.println("getting settings json ("+(String)_size+")");
 
   String json;
-  sendToBuffer("{\"clients\":[");
+  //sendToBuffer("{\"clients\":[");
   for (int i = 0; i < results && i < maxClientScanResults; i++) {
       json = "{";
       json += "\"i\":" + (String)i + ",";
@@ -216,29 +235,36 @@ void ClientScan::send() {
       json += "\"m\":\"" + getClientMac(i).toString() + "\",";
       json += "\"n\":\"" + (String)nameList.getByMac(getClientMac(i)) + "\",";
       json += "\"l\":" + (String)nameList.getNumByMac(getClientMac(i)) + ",";
+//      json += "\"n\":\"" + (String)getClientMac(i) + "\",";
+//      json += "\"l\":" + (String)getClientMac(i) + ",";
       json += "\"v\":\"" + (String)getClientVendor(i) + "\",";
       json += "\"s\":" + (String)getClientSelected(i) + ",";
       if(getClientConnectedAp(i)>=0) json += "\"a\":\"" + (String)apScan.getAPName(getClientConnectedAp(i)) + "\"";
       else json += "\"a\":\"?\"";
       json += "}";
       if ((i != results - 1) && (i != maxClientScanResults - 1)) json += ",";
-      sendToBuffer(json);
+      //sendToBuffer(json);
   }
-  sendToBuffer("],\"nameList\":[");
+  json += "],\"nameList\":[";
+//  sendToBuffer("],\"nameList\":[");
+//  
+//  for (int i = 0; i < nameList.len; i++) {
+//    json = "{";
+//    json += "\"n\":\"" + nameList.get(i) + "\",";
+//    json += "\"m\":\"" + nameList.getMac(i).toString() + "\"";
+//    //json += "\"v\":\"" + data_getVendor(nameList.getMac(i)._get(0), nameList.getMac(i)._get(1), nameList.getMac(i)._get(2)) + "\"";
+//    json += "}";
+//    if (i != nameList.len - 1) json += ",";
+//    sendToBuffer(json);
+//  }
+//  sendToBuffer("]}");
+  json += "]}";
   
-  for (int i = 0; i < nameList.len; i++) {
-    json = "{";
-    json += "\"n\":\"" + nameList.get(i) + "\",";
-    json += "\"m\":\"" + nameList.getMac(i).toString() + "\"";
-    //json += "\"v\":\"" + data_getVendor(nameList.getMac(i)._get(0), nameList.getMac(i)._get(1), nameList.getMac(i)._get(2)) + "\"";
-    json += "}";
-    if (i != nameList.len - 1) json += ",";
-    sendToBuffer(json);
+  //sendBuffer(); // @win - comment out not use for this purpose
+
+  if(debug){
+    Serial.println("\nJSON: " + json);
+    Serial.println("\ndone");
   }
-  sendToBuffer("]}");
-
-  sendBuffer();
-
-  if(debug) Serial.println("\ndone");
 
 }

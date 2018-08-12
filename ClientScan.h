@@ -7,14 +7,14 @@
 #include "Mac.h"
 #include "MacList.h"
 #include "APScan.h"
-//#include "NameList.h"
+#include "NameList.h"
 
 extern "C" {
 #include "user_interface.h"
 }
 
 extern APScan apScan;
-//extern NameList nameList;
+extern NameList nameList;
 
 extern String data_getVendor(uint8_t first, uint8_t second, uint8_t third);
 extern bool intInArray(int num, int _array[]);
@@ -34,6 +34,7 @@ class ClientScan {
     void select(int num);
 
     String getClientName(int num);
+//    Mac getClientName(int num);
     int getClientPackets(int num);
     String getClientVendor(int num);
     Mac getClientMac(int num);

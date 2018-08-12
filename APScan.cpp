@@ -15,10 +15,15 @@ bool APScan::start() {
     selected[i] = false;
     String("").toCharArray(names[i], 33);
   }
+
+  // Scan Networks/Wifi and return the number of AP founds
   results = WiFi.scanNetworks(
     false,
-    true //settings.apScanHidden
+    true //settings.apScanHidden - Scan including hidden?
   ); // lets scanNetworks return hidden APs. (async = false & show_hidden = true)
+
+
+  // Max AP to search 
   if(results > maxAPScanResults) results = maxAPScanResults;
 
   if (debug) Serial.println("Scan results: "+(String)results);
@@ -26,14 +31,17 @@ bool APScan::start() {
   for (int i = 0; i < results; i++) {
     Mac _ap;
     _ap.set(WiFi.BSSID(i)[0], WiFi.BSSID(i)[1], WiFi.BSSID(i)[2], WiFi.BSSID(i)[3], WiFi.BSSID(i)[4], WiFi.BSSID(i)[5]);
-    aps.add(_ap);
+    aps.add(_ap); // Save the search AP
+    
     channels[i] = WiFi.channel(i);
     rssi[i] = WiFi.RSSI(i);
     encryption[i] = WiFi.encryptionType(i);
     hidden[i] = WiFi.isHidden(i);
+    
     String _ssid = WiFi.SSID(i);
     _ssid.replace("\"", "\\\"");
     _ssid.toCharArray(names[i], 33);
+    
     //data_getVendor(WiFi.BSSID(i)[0],WiFi.BSSID(i)[1],WiFi.BSSID(i)[2]).toCharArray(vendors[i],9);
     if (debug) {
       Serial.print((String)i);
