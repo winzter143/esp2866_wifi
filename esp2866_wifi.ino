@@ -1,6 +1,7 @@
 /*
  * This will deauthenticate some users from the network
  * Pin 13 Port B
+ * My modified version of deauthenticate
  */
 #include <Arduino.h>
 
@@ -20,13 +21,43 @@
 /**
  * Constant Declaration
  */
+ /**
+  * List Of client to deauthenticate
+  */
 const String clientList = {
    
 };
+
+/**
+ * List of AP to authenticate
+ */
+const String apList = {
+     
+};
+
+
 const bool debug = true;
 
-// This server the time 
-const int clientScanTime = 15; // 15 secs
+/**
+ * scan time on idel
+ */
+const int clientScanTime = 15; 
+int clientScanCounter = 0; 
+bool is_found = false;
+/**
+ * Attac
+ */
+const int attackTime = 20; // Attacking time
+int attackTimeCounter = 0;
+const int attackCount = 3; // after this will go to idle again
+int attackCountCounter = 0; // after this will go to idle again
+const int attackIdle = 10; // after this will go to idle again
+int attackIdleCounter = 0; // after this will go to idle again
+
+
+
+
+ 
 
 
 /**
@@ -68,15 +99,98 @@ void setup() {
   apScan.start(); // Working Already
   digitalWrite(BUILTIN_LED, LOW);
 
-  delay(2000);
+  delay(2000); // Delay 2 secs
   //clientScan.start(clientScanTime);
   digitalWrite(BUILTIN_LED, HIGH);
 }
-void loop() {
 
+
+/**
+ * The main process from
+ */
+void loop() {
   // Pure Attack Algirithm
+  delay(1000); // delay for 1 sec
+  int _time = millis();
+  Serial.println("LOOOOOOP:"+ (String)_time);
+  
+  
+  if (is_found == true) {
+    
+    delay(1000); // delay for 1 sec
+    _time = millis();
+    //Serial.println("SCAN STARt: "  + (String)_time);
+    
+  
+      
+      //const int attackTime = 20; // Attacking time
+      //int attackTimeCounter = 0;
+
+    if (attackIdleCounter >= attackIdle){
+
+      // DO the attack here Start attack here
+      Serial.println("Attack Idle count: " + (String) attackIdleCounter);
+
+      if (attackTimeCounter >= attackTime){
+        Serial.println("Attack count: " + (String) attackTimeCounter);
+        
+        if (attackCountCounter  >= attackCount){
+          Serial.println("RESET attack counter: ");
+          attackCountCounter = 0;
+          clientScanCounter = 0;
+          
+          is_found = false; // Back to scan again
+          attackTimeCounter = 0;
+        }else{
+          Serial.println("RESET attack counter: " + (String)attackCountCounter);
+        }
+        
+        attackCountCounter++;
+        attackTimeCounter=0;
+        attackIdleCounter=0;
+       
+      }// if (attackTimeCounter >= attackTime){
+      
+      attackTimeCounter++;
+    } // if (attackIdleCounter >= attackIdle){
+    else{
+       Serial.println("\nIDLE Attack count: " + (String) attackIdleCounter);
+    }
+    
+    attackIdleCounter++;
+    
+      
+    //clientScanTime=0
+  }else{
+    if (clientScanCounter >= clientScanTime){
+      _time = millis();
+      //Serial.println("START SCAN Client(%i): %i");//, clientScanCounter, _time);
+      
+      // Dont Scan APs again since already scan in the boot.
+      // START Scan Client in AP
+  
+      // Do The scan Client here
+      is_found=true;
+      if (is_found == true){
+         //Serial.println("Scan Found  Cleint: %i");//, _time);
+      }else{
+         //Serial.println("SCAN reset to idlea: %i");//, _time);
+        clientScanCounter = 0;
+      }
+    }
+  }
+   
+  clientScanCounter++;
+  Serial.print("-");
+   Serial.println(clientScanCounter);
 }
 
-
-
-
+void startClientScan() {
+  //if (server.hasArg("time") && apScan.getFirstTarget() > -1 && !clientScan.sniffing) {
+   // server.send(200, "text/json", "true");
+    //clientScan.start(100000);
+    //attack.stopAll();
+  //} else {
+  //  server.send( 200, "text/json", "Error: no selected access point");
+  //}
+}

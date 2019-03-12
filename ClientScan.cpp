@@ -26,7 +26,9 @@ void ClientScan::start(int _time) {
     packets[i] = 0;
   }
 
-  for (int i = 0; i < 13; i++) channels[i] = 0;
+  for (int i = 0; i < 13; i++){
+    channels[i] = 0;
+  }
 
   results = 0;
   timeout = _time;
@@ -35,6 +37,7 @@ void ClientScan::start(int _time) {
   channelsNum = 0;
   curChannel = 0;
 
+  // @TODO, Undestand the data on "apScan"
   for (int i = 0; i < apScan.results; i++) {
     if (apScan.isSelected(i)) {
       if (!intInArray(apScan.getAPChannel(i), channels)) {
